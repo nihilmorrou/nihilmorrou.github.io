@@ -46,6 +46,10 @@
     let currentUser = null;
 
     window.onload = async function() {
+      // Ждем готовности базы данных
+      await db.waitForReady();
+      console.log('База данных готова, загружаем библиотеку...');
+      
       currentUser = db.getCurrentUser();
       
       if (currentUser) {
@@ -59,28 +63,35 @@
     };
     
     async function loadMaterials() {
-      const query = document.getElementById('searchInput').value;
-      const materials = await db.searchMaterials(query);
-      const tbody = document.getElementById('materialsList');
-      
-      if (materials.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Материалы не найдены</td></tr>';
-        return;
-      }
-      
-      tbody.innerHTML = '';
-      
-      for (const material of materials) {
-        const row = tbody.insertRow();
-        row.insertCell(0).textContent = material.title;
-        row.insertCell(1).textContent = material.size;
-        row.insertCell(2).textContent = material.downloads || 0;
+      try {
+        const query = document.getElementById('searchInput').value;
+        const materials = await db.searchMaterials(query);
+        console.log('Загружены материалы:', materials);
         
-        const downloadCell = row.insertCell(3);
-        const downloadBtn = document.createElement('button');
-        downloadBtn.textContent = 'Скачать';
-        downloadBtn.onclick = () => downloadMaterial(material);
-        downloadCell.appendChild(downloadBtn);
+        const tbody = document.getElementById('materialsList');
+        
+        if (!materials || materials.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Материалы не найдены</td></tr>';
+          return;
+        }
+        
+        tbody.innerHTML = '';
+        
+        for (const material of materials) {
+          const row = tbody.insertRow();
+          row.insertCell(0).textContent = material.title;
+          row.insertCell(1).textContent = material.size;
+          row.insertCell(2).textContent = material.downloads || 0;
+          
+          const downloadCell = row.insertCell(3);
+          const downloadBtn = document.createElement('button');
+          downloadBtn.textContent = 'Скачать';
+          downloadBtn.onclick = () => downloadMaterial(material);
+          downloadCell.appendChild(downloadBtn);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки материалов:', error);
+        document.getElementById('materialsList').innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Ошибка загрузки материалов</td></tr>';
       }
     }
     
@@ -90,6 +101,7 @@
         alert(`Скачивание "${material.title}" началось!`);
         await loadMaterials();
       } catch (error) {
+        console.error('Ошибка скачивания:', error);
         alert('Ошибка при скачивании');
       }
     }
