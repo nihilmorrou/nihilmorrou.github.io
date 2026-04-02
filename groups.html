@@ -17,34 +17,110 @@
       <a href="groups.html" class="active">Сообщества</a>
       <a href="library.html">Библиотека</a>
     </nav>
+    <div class="user-info" id="userInfo" style="display: none;">
+      <span id="userName"></span>
+      <button onclick="logout()" class="logout-btn">Выйти</button>
+    </div>
   </header>
 
   <main class="content">
     <h2 style="color: white;">Социальные группы</h2>
-    <p style="color: rgb(255, 242, 0);">Вы еще не вступили ни в одну социальную группу</p>
+    <p id="userStatus" style="color: rgb(255, 242, 0);"></p>
 
-    <table class="group-table">
-      <thead>
-        <tr>
-          <th>Название группы</th>
-          <th>Участники</th>
-          <th>Сообщения</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr><td>Blender3D</td><td>10</td><td>23145</td><td><button>Вступить</button></td></tr>
-        <tr><td>Unity community</td><td>8</td><td>57335</td><td><button>Вступить</button></td></tr>
-        <tr><td>Питонисты</td><td>14</td><td>17451</td><td><button>Вступить</button></td></tr>
-        <tr><td>Русский рок</td><td>26</td><td>94145</td><td><button>Вступить</button></td></tr>
-        <tr><td>Клуб линуксоидов</td><td>7</td><td>43167</td><td><button>Вступить</button></td></tr>
-        <tr><td>Скриптовая автоматизация</td><td>63</td><td>55115</td><td><button>Вступить</button></td></tr>
-      </tbody>
-    </table>
+    <div id="groupsContainer">
+      <table class="group-table">
+        <thead>
+          <tr><th>Название группы</th><th>Участники</th><th>Сообщения</th><th>Описание</th><th></th></tr>
+        </thead>
+        <tbody id="groupsList">
+          <tr><td colspan="5" style="text-align: center;">Загрузка...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </main>
 
   <footer>
     <p>© 2026 UustBook</p>
   </footer>
+
+  <script src="database.js"></script>
+  <script>
+    let currentUser = null;
+    let userGroups = [];
+
+    window.onload = async function() {
+      currentUser = db.getCurrentUser();
+      
+      if (currentUser) {
+        document.getElementById('userInfo').style.display = 'flex';
+        document.getElementById('userName').textContent = currentUser.fullname;
+        document.getElementById('userStatus').textContent = 'Вы можете вступать в группы';
+        userGroups = await db.getUserGroups(currentUser.id);
+      } else {
+        document.getElementById('userStatus').innerHTML = 'Для вступления в группы <a href="login.html" style="color: #ffd700;">войдите</a> в аккаунт';
+      }
+      
+      await loadGroups();
+    };
+    
+    async function loadGroups() {
+      const groups = await db.getAll('groups');
+      const tbody = document.getElementById('groupsList');
+      tbody.innerHTML = '';
+      
+      for (const group of groups) {
+        const isMember = currentUser && userGroups.some(g => g.id === group.id);
+        
+        const row = tbody.insertRow();
+        row.insertCell(0).textContent = group.name;
+        row.insertCell(1).textContent = group.members;
+        row.insertCell(2).textContent = group.messages;
+        row.insertCell(3).textContent = group.description;
+        
+        const actionCell = row.insertCell(4);
+        
+        if (isMember) {
+          const chatBtn = document.createElement('button');
+          chatBtn.textContent = 'Перейти в чат';
+          chatBtn.style.background = '#28a745';
+          chatBtn.onclick = () => window.location.href = `group-chat.html?id=${group.id}`;
+          actionCell.appendChild(chatBtn);
+        } else if (currentUser) {
+          const joinBtn = document.createElement('button');
+          joinBtn.textContent = 'Вступить';
+          joinBtn.onclick = () => joinGroup(group.id);
+          actionCell.appendChild(joinBtn);
+        } else {
+          const loginBtn = document.createElement('button');
+          loginBtn.textContent = 'Войти';
+          loginBtn.style.background = '#6c757d';
+          loginBtn.onclick = () => window.location.href = 'login.html';
+          actionCell.appendChild(loginBtn);
+        }
+      }
+    }
+    
+    async function joinGroup(groupId) {
+      if (!currentUser) {
+        alert('Войдите в аккаунт');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      try {
+        await db.joinGroup(currentUser.id, groupId);
+        alert('Вы вступили в группу!');
+        userGroups = await db.getUserGroups(currentUser.id);
+        await loadGroups();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+    
+    async function logout() {
+      db.logout();
+      window.location.href = 'index.html';
+    }
+  </script>
 </body>
 </html>
