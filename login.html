@@ -35,6 +35,7 @@
       </form>
       <p>Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
       <p style="margin-top: 10px; font-size: 14px; color: #666;">Тестовый доступ: test@example.com / 123456</p>
+      <div id="debugInfo" style="margin-top: 10px; font-size: 12px; color: #999;"></div>
     </div>
   </main>
 
@@ -49,12 +50,23 @@
       
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const debugDiv = document.getElementById('debugInfo');
+      
+      debugDiv.textContent = 'Проверка...';
       
       try {
+        // Ждем готовности базы данных
+        await db.waitForReady();
+        
+        debugDiv.textContent = 'База данных готова, выполняем вход...';
+        
         const user = await db.loginUser(email, password);
+        debugDiv.textContent = 'Вход выполнен! Перенаправление...';
+        
         alert('Вход выполнен успешно!');
         window.location.href = 'index.html';
       } catch (error) {
+        debugDiv.textContent = 'Ошибка: ' + error.message;
         alert('Ошибка: ' + error.message);
       }
     });
