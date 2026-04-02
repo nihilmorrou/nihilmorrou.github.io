@@ -22,7 +22,7 @@
   <main class="content">
     <div class="auth-form">
       <h2>Вход в аккаунт</h2>
-      <form>
+      <form id="loginForm">
         <div class="form-group">
           <label for="email">Email:</label>
           <input type="email" id="email" name="email" required>
@@ -34,11 +34,30 @@
         <button type="submit" class="btn">Войти</button>
       </form>
       <p>Нет аккаунта? <a href="register.html">Зарегистрироваться</a></p>
+      <p style="margin-top: 10px; font-size: 14px; color: #666;">Тестовый доступ: test@example.com / 123456</p>
     </div>
   </main>
 
   <footer>
     <p>© 2026 UustBook</p>
   </footer>
+
+  <script src="database.js"></script>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const user = await db.loginUser(email, password);
+        alert('Вход выполнен успешно!');
+        window.location.href = 'index.html';
+      } catch (error) {
+        alert('Ошибка: ' + error.message);
+      }
+    });
+  </script>
 </body>
 </html>
