@@ -98,16 +98,6 @@
       font-size: 16px;
     }
     
-    .faculty-header {
-      background: rgba(255,255,255,0.1);
-      padding: 10px 15px;
-      margin-top: 20px;
-      margin-bottom: 10px;
-      border-radius: 8px;
-      color: #ffd700;
-      font-weight: bold;
-    }
-    
     header {
       background: rgba(255, 255, 255, 0.95);
       box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -205,7 +195,7 @@
         <tbody id="materialsBody">
           <tr><td colspan="5" style="text-align: center;">Загрузка...</td></tr>
         </tbody>
-       </table>
+      </table>
     </div>
   </main>
 
@@ -213,6 +203,7 @@
     <p>© 2026 UustBook</p>
   </footer>
 
+  <script src="database.js"></script>
   <script>
     // База данных материалов по факультетам
     const materialsData = [
@@ -260,9 +251,11 @@
       { title: "Немецкий язык", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "1800 кб", downloads: 0 }
     ];
     
+    let currentUser = null;
+    
     // Загружаем сохраненные счетчики скачиваний из localStorage
     function loadDownloads() {
-      const saved = localStorage.getItem('materialDownloads');
+      const saved = localStorage.getItem('educationalDownloads');
       if (saved) {
         const downloads = JSON.parse(saved);
         for (let i = 0; i < materialsData.length; i++) {
@@ -276,13 +269,13 @@
     // Сохраняем счетчики скачиваний
     function saveDownloads() {
       const downloads = materialsData.map(m => m.downloads);
-      localStorage.setItem('materialDownloads', JSON.stringify(downloads));
+      localStorage.setItem('educationalDownloads', JSON.stringify(downloads));
     }
     
-    // Функция скачивания - всегда скачивает 3.txt
-    function downloadMaterial(index) {
+    // Функция скачивания - ВСЕГДА скачивает 3.txt
+    function downloadFile(materialIndex, materialTitle) {
       // Увеличиваем счетчик скачиваний
-      materialsData[index].downloads++;
+      materialsData[materialIndex].downloads++;
       saveDownloads();
       
       // Скачиваем файл 3.txt
@@ -297,7 +290,7 @@
       const faculty = document.getElementById('facultySelect').value;
       displayMaterials(faculty);
       
-      console.log(`Скачивание файла 3.txt для материала "${materialsData[index].title}"`);
+      console.log(`Скачан файл 3.txt для материала: ${materialTitle}`);
     }
     
     // Отображение материалов
@@ -334,43 +327,52 @@
         const downloadBtn = document.createElement('button');
         downloadBtn.textContent = '📥 Скачать';
         downloadBtn.className = 'download-btn';
-        downloadBtn.onclick = (function(idx) {
-          return function() { downloadMaterial(idx); };
-        })(originalIndex);
+        
+        // Создаем замыкание с правильными индексами
+        const idx = originalIndex;
+        const title = material.title;
+        downloadBtn.onclick = function() {
+          downloadFile(idx, title);
+        };
+        
         actionCell.appendChild(downloadBtn);
       }
     }
     
-    // Обработчик выбора факультета
-    document.getElementById('facultySelect').addEventListener('change', function() {
-      displayMaterials(this.value);
-    });
-    
-    // Инициализация
-    loadDownloads();
-    displayMaterials('');
-    
-    // Авторизация
-    let currentUser = null;
-    
+    // Инициализация страницы
     window.onload = async function() {
+      // Ждем готовности базы данных
       if (db && typeof db.waitForReady === 'function') {
         await db.waitForReady();
       }
       
-      currentUser = db.getCurrentUser();
+      // Получаем текущего пользователя
+      if (db && typeof db.getCurrentUser === 'function') {
+        currentUser = db.getCurrentUser();
+      }
       
       if (currentUser) {
         document.getElementById('userInfo').style.display = 'flex';
         document.getElementById('userName').textContent = currentUser.fullname;
       }
+      
+      // Загружаем счетчики и отображаем материалы
+      loadDownloads();
+      displayMaterials('');
+      
+      // Обработчик выбора факультета
+      document.getElementById('facultySelect').addEventListener('change', function() {
+        displayMaterials(this.value);
+      });
     };
     
+    // Функция выхода
     async function logout() {
-      db.logout();
+      if (db && typeof db.logout === 'function') {
+        db.logout();
+      }
       window.location.href = 'index.html';
     }
   </script>
-  <script src="database.js"></script>
 </body>
 </html>
