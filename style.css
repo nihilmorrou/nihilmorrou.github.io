@@ -1,0 +1,101 @@
+body {font-family: "Segoe UI", sans-serif;margin: 0;background-color: #f5f7fb;color: #222222;}
+header {background: #ffffff;display: flex;justify-content: space-between;align-items: center;padding: 10px 40px;border-bottom: 2px solid #e0e0e0;}
+.logo {display: flex;align-items: center;gap: 10px;}
+.logo img {width: 40px;}
+nav a {margin: 0 10px;text-decoration: none;color: #2b2b2b;font-weight: 500;}
+nav a.active {color: #2a63ff;border-bottom: 2px solid #2a63ff;}
+.auth a {color: #2a63ff;text-decoration: none;}
+.hero {background: url('uni.jpg') center/cover no-repeat;color: white;text-align: left;padding: 120px 60px;}
+.hero-text {max-width: 600px;background: rgba(0,0,0,0.5);padding: 20px;border-radius: 12px;}
+.hero-buttons .btn {display: inline-block;margin: 10px 10px 0 0;padding: 10px 18px;background: #2a63ff;color: white;border-radius: 8px;text-decoration: none;transition: 0.3s;}
+.hero-buttons .btn:hover {background: #0040ff;}
+.content {padding: 40px;}
+.group-table, .library-table {width: 100%;border-collapse: collapse;margin-top: 20px;background: white;border-radius: 10px;overflow: hidden;}
+.group-table th, .group-table td, .library-table th, .library-table td {padding: 12px 15px;text-align: left;border-bottom: 1px solid #e0e0e0;}
+button {background: #2a63ff;color: white;border: none;border-radius: 6px;padding: 8px 14px;cursor: pointer;transition: 0.3s;}
+button:hover {background: #0040ff;}
+.search-input {width: 100%;padding: 10px;font-size: 16px;border: 1px solid #ccc;border-radius: 8px;}
+footer {text-align: center;background: #2a63ff;color: white;padding: 10px 0;margin-top: 40px;}
+
+.auth-form {
+  max-width: 400px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.auth-form .btn {
+  width: 100%;
+  padding: 12px;
+  background: #2a63ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.auth-form .btn:hover {
+  background: #0040ff;
+}
+
+.auth-form p {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.auth-form a {
+  color: #2a63ff;
+  text-decoration: none;
+}
+
+/* Стили для страницы руководства */
+.guide-section {
+  background: white;
+  padding: 25px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.guide-section h3 {
+  color: #2a63ff;
+  margin-top: 0;
+}
+
+.guide-section p {
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+body {
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  background-image: url('uni.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #222;
+}

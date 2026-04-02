@@ -1,0 +1,66 @@
+{
+    "groups": [
+      {
+        "id": 1,
+        "name": "Blender3D",
+        "members": 10,
+        "messages": 23145,
+        "description": "3D моделирование и анимация"
+      },
+      {
+        "id": 2,
+        "name": "Unity community",
+        "members": 8,
+        "messages": 57335,
+        "description": "Разработка игр на Unity"
+      },
+      {
+        "id": 3,
+        "name": "Питонисты",
+        "members": 14,
+        "messages": 17451,
+        "description": "Программирование на Python"
+      },
+      {
+        "id": 4,
+        "name": "Русский рок",
+        "members": 26,
+        "messages": 94145,
+        "description": "Обсуждение русской рок-музыки"
+      },
+      {
+        "id": 5,
+        "name": "Клуб линуксоидов",
+        "members": 7,
+        "messages": 43167,
+        "description": "Linux и open source"
+      },
+      {
+        "id": 6,
+        "name": "Скриптовая автоматизация",
+        "members": 63,
+        "messages": 55115,
+        "description": "Автоматизация задач"
+      }
+    ],
+    "materials": [
+      {
+        "id": 1,
+        "title": "Политология. Учебник для студентов вузов (2013)",
+        "size": "1605 кб",
+        "downloads": 0
+      },
+      {
+        "id": 2,
+        "title": "Матяш, Жаров, Несмеянов. Философия. Учебник",
+        "size": "8705 кб",
+        "downloads": 0
+      },
+      {
+        "id": 3,
+        "title": "История России (2-е издание)",
+        "size": "2195 кб",
+        "downloads": 0
+      }
+    ]
+  }

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UustBook — Чат группы</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .chat-container {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .messages {
+      height: 400px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      background: #f9f9f9;
+    }
+    
+    .message {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .message-author {
+      font-weight: bold;
+      color: #2a63ff;
+      margin-bottom: 5px;
+    }
+    
+    .message-time {
+      font-size: 0.8em;
+      color: #999;
+      margin-left: 10px;
+    }
+    
+    .message-text {
+      margin-top: 5px;
+      line-height: 1.4;
+    }
+    
+    .message-input {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .message-input textarea {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      resize: vertical;
+    }
+    
+    .message-input button {
+      padding: 10px 20px;
+      align-self: flex-end;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #2a63ff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="book-open-cover.png" alt="UustBook logo">
+      <h1>UustBook</h1>
+    </div>
+    <nav>
+      <a href="index.html">Главная</a>
+      <a href="groups.html">Сообщества</a>
+      <a href="library.html">Библиотека</a>
+    </nav>
+    <div class="user-info" id="userInfo">
+      <span id="userName"></span>
+      <button onclick="logout()" class="logout-btn">Выйти</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <a href="groups.html" class="back-link">← Назад к группам</a>
+    <h2 id="groupName" style="color: white;">Загрузка...</h2>
+    
+    <div class="chat-container">
+      <div class="messages" id="messages">
+        <!-- Сообщения будут здесь -->
+      </div>
+      
+      <div class="message-input">
+        <textarea id="messageText" rows="3" placeholder="Введите ваше сообщение..."></textarea>
+        <button onclick="sendMessage()">Отправить</button>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 UustBook</p>
+  </footer>
+
+  <script src="database.js"></script>
+  <script>
+    let currentUser = null;
+    let currentGroup = null;
+    let groupId = null;
+
+    window.onload = async function() {
+      currentUser = db.getCurrentUser();
+      
+      if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      document.getElementById('userName').textContent = currentUser.fullname;
+      
+      // Получаем ID группы из URL
+      const urlParams = new URLSearchParams(window.location.search);
+      groupId = parseInt(urlParams.get('id'));
+      
+      if (!groupId) {
+        window.location.href = 'groups.html';
+        return;
+      }
+      
+      // Загружаем информацию о группе
+      currentGroup = await db.getById('groups', groupId);
+      if (!currentGroup) {
+        window.location.href = 'groups.html';
+        return;
+      }
+      
+      document.getElementById('groupName').textContent = currentGroup.name;
+      
+      // Проверяем, состоит ли пользователь в группе
+      const userGroups = await db.getUserGroups(currentUser.id);
+      const isMember = userGroups.some(g => g.id === groupId);
+      
+      if (!isMember) {
+        alert('Вы не состоите в этой группе');
+        window.location.href = 'groups.html';
+        return;
+      }
+      
+      // Загружаем сообщения
+      await loadMessages();
+      
+      // Автоматически обновляем сообщения каждые 3 секунды
+      setInterval(loadMessages, 3000);
+    };
+    
+    async function loadMessages() {
+      const messages = await db.getGroupMessages(groupId);
+      const messagesDiv = document.getElementById('messages');
+      
+      messagesDiv.innerHTML = '';
+      
+      for (const msg of messages) {
+        const user = await db.getById('users', msg.userId);
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+        
+        const time = new Date(msg.createdAt).toLocaleString();
+        
+        messageDiv.innerHTML = `
+          <div class="message-author">
+            ${user ? user.fullname : 'Пользователь'}
+            <span class="message-time">${time}</span>
+          </div>
+          <div class="message-text">${escapeHtml(msg.text)}</div>
+        `;
+        
+        messagesDiv.appendChild(messageDiv);
+      }
+      
+      // Прокручиваем вниз
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    async function sendMessage() {
+      const textarea = document.getElementById('messageText');
+      const text = textarea.value.trim();
+      
+      if (!text) {
+        alert('Введите сообщение');
+        return;
+      }
+      
+      try {
+        await db.addMessage(groupId, currentUser.id, text);
+        textarea.value = '';
+        await loadMessages();
+      } catch (error) {
+        alert('Ошибка при отправке сообщения');
+      }
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    async function logout() {
+      db.logout();
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

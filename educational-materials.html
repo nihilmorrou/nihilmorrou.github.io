@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UustBook — Учебные материалы</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .content {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .content h2 {
+      color: white;
+      margin-bottom: 20px;
+    }
+    
+    .faculty-select {
+      width: 100%;
+      padding: 12px 20px;
+      margin-bottom: 30px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+    
+    .faculty-select:focus {
+      outline: none;
+      border-color: #2a63ff;
+      box-shadow: 0 0 5px rgba(42, 99, 255, 0.3);
+    }
+    
+    .materials-table {
+      width: 100%;
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .materials-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .materials-table th {
+      background: #2a63ff;
+      color: white;
+      padding: 15px;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    .materials-table td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    
+    .materials-table tr:hover {
+      background: #f5f5f5;
+    }
+    
+    .download-btn {
+      background: #2a63ff;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    .download-btn:hover {
+      background: #1a4fcc;
+    }
+    
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #ffd700;
+      text-decoration: none;
+    }
+    
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    
+    .no-materials {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+      font-size: 16px;
+    }
+    
+    .faculty-header {
+      background: rgba(255,255,255,0.1);
+      padding: 10px 15px;
+      margin-top: 20px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      color: #ffd700;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">
+      <img src="book-open-cover.png" alt="UustBook logo">
+      <h1>UustBook</h1>
+    </div>
+    <nav>
+      <a href="index.html">Главная</a>
+      <a href="groups.html">Сообщества</a>
+      <a href="library.html">Библиотека</a>
+    </nav>
+    <div class="auth">
+      <a href="login.html">Войти</a> | 
+      <a href="register.html">Регистрация</a>
+    </div>
+  </header>
+
+  <main class="content">
+    <a href="index.html" class="back-link">← На главную</a>
+    <h2>📚 Учебные материалы</h2>
+    
+    <select id="facultySelect" class="faculty-select">
+      <option value="">📖 Выберите факультет</option>
+      <option value="Отдел подготовки кадров высшей квалификации">🎓 Отдел подготовки кадров высшей квалификации</option>
+      <option value="Институт непрерывного образования">📚 Институт непрерывного образования</option>
+      <option value="Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»">🔧 Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»</option>
+      <option value="Факультет авиационных двигателей, энергетики и транспорта">✈️ Факультет авиационных двигателей, энергетики и транспорта</option>
+      <option value="Институт информатики, математики и робототехники">💻 Институт информатики, математики и робототехники</option>
+      <option value="Институт электротехнического инжиниринга">⚡ Институт электротехнического инжиниринга</option>
+      <option value="Институт технологий и материалов">🏭 Институт технологий и материалов</option>
+      <option value="Отделение среднего профессионального образования «Авиационный технический колледж» филиала в г. Кумертау">✈️ Отделение среднего профессионального образования «Авиационный технический колледж» филиала в г. Кумертау</option>
+      <option value="Институт права">⚖️ Институт права</option>
+      <option value="Институт истории и государственного управления">📜 Институт истории и государственного управления</option>
+      <option value="Физико-технический институт">🔬 Физико-технический институт</option>
+      <option value="Институт экономики, управления и бизнеса">📊 Институт экономики, управления и бизнеса</option>
+      <option value="Институт природы и человека">🌿 Институт природы и человека</option>
+      <option value="Высшая школа зарубежной филологии, лингвистики и перевода">🌍 Высшая школа зарубежной филологии, лингвистики и перевода</option>
+    </select>
+    
+    <div class="materials-table">
+      <table id="materialsTable">
+        <thead>
+          <tr>
+            <th>Название</th>
+            <th>Факультет</th>
+            <th>Размер</th>
+            <th>Скачивания</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="materialsBody">
+          <!-- Данные загружаются через JavaScript -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 UustBook</p>
+  </footer>
+
+  <script>
+    // База данных материалов по факультетам
+    const materialsData = [
+      // Отдел подготовки кадров высшей квалификации
+      { title: "Методология научных исследований", faculty: "Отдел подготовки кадров высшей квалификации", size: "2500 кб", downloads: 0 },
+      { title: "Педагогика высшей школы", faculty: "Отдел подготовки кадров высшей квалификации", size: "1800 кб", downloads: 0 },
+      
+      // Институт непрерывного образования
+      { title: "Основы дистанционного обучения", faculty: "Институт непрерывного образования", size: "1200 кб", downloads: 0 },
+      { title: "Современные образовательные технологии", faculty: "Институт непрерывного образования", size: "2100 кб", downloads: 0 },
+      
+      // Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»
+      { title: "Инженерная графика", faculty: "Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»", size: "3400 кб", downloads: 0 },
+      { title: "Материаловедение", faculty: "Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»", size: "2800 кб", downloads: 0 },
+      { title: "Технология машиностроения", faculty: "Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»", size: "4200 кб", downloads: 0 },
+      
+      // Факультет авиационных двигателей, энергетики и транспорта
+      { title: "Авиационные двигатели", faculty: "Факультет авиационных двигателей, энергетики и транспорта", size: "5600 кб", downloads: 0 },
+      { title: "Термодинамика", faculty: "Факультет авиационных двигателей, энергетики и транспорта", size: "3100 кб", downloads: 0 },
+      { title: "Энергосбережение", faculty: "Факультет авиационных двигателей, энергетики и транспорта", size: "1950 кб", downloads: 0 },
+      
+      // Институт информатики, математики и робототехники
+      { title: "Программирование на Python", faculty: "Институт информатики, математики и робототехники", size: "3200 кб", downloads: 0 },
+      { title: "Базы данных", faculty: "Институт информатики, математики и робототехники", size: "2700 кб", downloads: 0 },
+      { title: "Робототехника", faculty: "Институт информатики, математики и робототехники", size: "4100 кб", downloads: 0 },
+      { title: "Высшая математика", faculty: "Институт информатики, математики и робототехники", size: "3800 кб", downloads: 0 },
+      
+      // Институт электротехнического инжиниринга
+      { title: "Электротехника", faculty: "Институт электротехнического инжиниринга", size: "2900 кб", downloads: 0 },
+      { title: "Схемотехника", faculty: "Институт электротехнического инжиниринга", size: "2300 кб", downloads: 0 },
+      { title: "Микропроцессорные системы", faculty: "Институт электротехнического инжиниринга", size: "3500 кб", downloads: 0 },
+      
+      // Институт технологий и материалов
+      { title: "Материаловедение", faculty: "Институт технологий и материалов", size: "3100 кб", downloads: 0 },
+      { title: "Нанотехнологии", faculty: "Институт технологий и материалов", size: "2700 кб", downloads: 0 },
+      { title: "Полимерные материалы", faculty: "Институт технологий и материалов", size: "2200 кб", downloads: 0 },
+      
+      // Отделение СПО «Авиационный технический колледж» филиала в г. Кумертау
+      { title: "Основы авиастроения", faculty: "Отделение среднего профессионального образования «Авиационный технический колледж» филиала в г. Кумертау", size: "1900 кб", downloads: 0 },
+      { title: "Техническая механика", faculty: "Отделение среднего профессионального образования «Авиационный технический колледж» филиала в г. Кумертау", size: "2400 кб", downloads: 0 },
+      
+      // Институт права
+      { title: "Гражданское право", faculty: "Институт права", size: "2600 кб", downloads: 0 },
+      { title: "Уголовное право", faculty: "Институт права", size: "2900 кб", downloads: 0 },
+      { title: "Конституционное право", faculty: "Институт права", size: "2100 кб", downloads: 0 },
+      
+      // Институт истории и государственного управления
+      { title: "История России", faculty: "Институт истории и государственного управления", size: "3400 кб", downloads: 0 },
+      { title: "Государственное управление", faculty: "Институт истории и государственного управления", size: "2800 кб", downloads: 0 },
+      { title: "Политология", faculty: "Институт истории и государственного управления", size: "2300 кб", downloads: 0 },
+      
+      // Физико-технический институт
+      { title: "Физика", faculty: "Физико-технический институт", size: "4200 кб", downloads: 0 },
+      { title: "Математический анализ", faculty: "Физико-технический институт", size: "3600 кб", downloads: 0 },
+      { title: "Квантовая механика", faculty: "Физико-технический институт", size: "3900 кб", downloads: 0 },
+      
+      // Институт экономики, управления и бизнеса
+      { title: "Экономическая теория", faculty: "Институт экономики, управления и бизнеса", size: "2500 кб", downloads: 0 },
+      { title: "Менеджмент", faculty: "Институт экономики, управления и бизнеса", size: "2200 кб", downloads: 0 },
+      { title: "Маркетинг", faculty: "Институт экономики, управления и бизнеса", size: "2000 кб", downloads: 0 },
+      { title: "Бухгалтерский учет", faculty: "Институт экономики, управления и бизнеса", size: "2700 кб", downloads: 0 },
+      
+      // Институт природы и человека
+      { title: "Биология", faculty: "Институт природы и человека", size: "3100 кб", downloads: 0 },
+      { title: "Экология", faculty: "Институт природы и человека", size: "2400 кб", downloads: 0 },
+      { title: "География", faculty: "Институт природы и человека", size: "2800 кб", downloads: 0 },
+      
+      // Высшая школа зарубежной филологии, лингвистики и перевода
+      { title: "Английский язык", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "1900 кб", downloads: 0 },
+      { title: "Теория перевода", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "2100 кб", downloads: 0 },
+      { title: "Лингвистика", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "2300 кб", downloads: 0 },
+      { title: "Немецкий язык", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "1800 кб", downloads: 0 }
+    ];
+    
+    // Загружаем сохраненные счетчики скачиваний из localStorage
+    function loadDownloads() {
+      const saved = localStorage.getItem('materialDownloads');
+      if (saved) {
+        const downloads = JSON.parse(saved);
+        for (let i = 0; i < materialsData.length; i++) {
+          if (downloads[i]) {
+            materialsData[i].downloads = downloads[i];
+          }
+        }
+      }
+    }
+    
+    // Сохраняем счетчики скачиваний
+    function saveDownloads() {
+      const downloads = materialsData.map(m => m.downloads);
+      localStorage.setItem('materialDownloads', JSON.stringify(downloads));
+    }
+    
+    // Отображение материалов
+    function displayMaterials(faculty) {
+      const tbody = document.getElementById('materialsBody');
+      tbody.innerHTML = '';
+      
+      let filteredMaterials;
+      if (faculty === '') {
+        filteredMaterials = materialsData;
+      } else {
+        filteredMaterials = materialsData.filter(m => m.faculty === faculty);
+      }
+      
+      if (filteredMaterials.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="no-materials">Нет материалов для выбранного факультета</td></tr>';
+        return;
+      }
+      
+      for (let i = 0; i < filteredMaterials.length; i++) {
+        const material = filteredMaterials[i];
+        const originalIndex = materialsData.findIndex(m => m.title === material.title && m.faculty === material.faculty);
+        
+        const row = tbody.insertRow();
+        row.insertCell(0).textContent = material.title;
+        row.insertCell(1).textContent = material.faculty;
+        row.insertCell(2).textContent = material.size;
+        
+        const downloadsCell = row.insertCell(3);
+        downloadsCell.textContent = material.downloads;
+        downloadsCell.className = 'downloads-count';
+        
+        const actionCell = row.insertCell(4);
+        const downloadBtn = document.createElement('button');
+        downloadBtn.textContent = 'Скачать';
+        downloadBtn.className = 'download-btn';
+        downloadBtn.onclick = (function(idx) {
+          return function() { downloadMaterial(idx); };
+        })(originalIndex);
+        actionCell.appendChild(downloadBtn);
+      }
+    }
+    
+    // Функция скачивания
+    function downloadMaterial(index) {
+      materialsData[index].downloads++;
+      saveDownloads();
+      
+      const faculty = document.getElementById('facultySelect').value;
+      displayMaterials(faculty);
+      
+      alert(`Скачивание материала "${materialsData[index].title}" началось!\nВсего скачиваний: ${materialsData[index].downloads}`);
+    }
+    
+    // Обработчик выбора факультета
+    document.getElementById('facultySelect').addEventListener('change', function() {
+      displayMaterials(this.value);
+    });
+    
+    // Инициализация
+    loadDownloads();
+    displayMaterials('');
+  </script>
+</body>
+</html>
