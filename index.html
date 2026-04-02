@@ -119,15 +119,17 @@
     
     .auth a {
       color: #2a63ff;
+      text-decoration: none;
     }
     
+    /* Стили для блока пользователя */
     .user-info {
       display: flex;
       align-items: center;
       gap: 15px;
     }
     
-    .user-info span {
+    #userName {
       color: #2a63ff;
       font-weight: 500;
     }
@@ -136,11 +138,10 @@
       background: #dc3545;
       color: white;
       border: none;
-      border-radius: 6px;
       padding: 6px 12px;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
-      transition: background 0.3s;
     }
     
     .logout-btn:hover {
@@ -167,10 +168,12 @@
       <a href="groups.html">Сообщества</a>
       <a href="library.html">Библиотека</a>
     </nav>
+    <!-- Блок для неавторизованных пользователей -->
     <div class="auth" id="authBlock">
       <a href="login.html">Войти</a> | 
       <a href="register.html">Регистрация</a>
     </div>
+    <!-- Блок для авторизованных пользователей -->
     <div class="user-info" id="userInfo" style="display: none;">
       <span id="userName"></span>
       <button onclick="logout()" class="logout-btn">Выйти</button>
@@ -200,19 +203,69 @@
 
   <script src="database.js"></script>
   <script>
-    window.onload = function() {
-      const user = db.getCurrentUser();
-      if (user && user.id) {
-        document.getElementById('authBlock').style.display = 'none';
-        document.getElementById('userInfo').style.display = 'flex';
-        document.getElementById('userName').textContent = user.fullname;
+    // Глобальная переменная для текущего пользователя
+    let currentUser = null;
+
+    // Функция обновления интерфейса в зависимости от авторизации
+    function updateUI() {
+      const authBlock = document.getElementById('authBlock');
+      const userInfo = document.getElementById('userInfo');
+      const userNameSpan = document.getElementById('userName');
+      
+      if (currentUser) {
+        // Пользователь авторизован
+        authBlock.style.display = 'none';
+        userInfo.style.display = 'flex';
+        userNameSpan.textContent = currentUser.fullname;
+      } else {
+        // Пользователь не авторизован
+        authBlock.style.display = 'flex';
+        userInfo.style.display = 'none';
       }
-    };
-    
+    }
+
+    // Функция выхода
     async function logout() {
-      db.logout();
+      if (db && typeof db.logout === 'function') {
+        db.logout();
+      }
+      currentUser = null;
+      updateUI();
       window.location.href = 'index.html';
     }
+
+    // Основная функция инициализации
+    async function initPage() {
+      try {
+        // Проверяем, что db существует и ждем его готовности
+        if (!db) {
+          console.error('База данных не найдена');
+          return;
+        }
+        
+        // Ждем готовности базы данных
+        if (typeof db.waitForReady === 'function') {
+          await db.waitForReady();
+        }
+        
+        console.log('База данных готова');
+        
+        // Получаем текущего пользователя
+        if (typeof db.getCurrentUser === 'function') {
+          currentUser = db.getCurrentUser();
+        }
+        
+        // Обновляем интерфейс
+        updateUI();
+        
+        console.log('Текущий пользователь:', currentUser);
+      } catch (error) {
+        console.error('Ошибка инициализации:', error);
+      }
+    }
+
+    // Запускаем инициализацию после загрузки страницы
+    window.addEventListener('DOMContentLoaded', initPage);
   </script>
 </body>
 </html>
