@@ -49,6 +49,10 @@
     let userGroups = [];
 
     window.onload = async function() {
+      // Ждем готовности базы данных
+      await db.waitForReady();
+      console.log('База данных готова, загружаем группы...');
+      
       currentUser = db.getCurrentUser();
       
       if (currentUser) {
@@ -56,6 +60,7 @@
         document.getElementById('userName').textContent = currentUser.fullname;
         document.getElementById('userStatus').textContent = 'Вы можете вступать в группы';
         userGroups = await db.getUserGroups(currentUser.id);
+        console.log('Группы пользователя:', userGroups);
       } else {
         document.getElementById('userStatus').innerHTML = 'Для вступления в группы <a href="login.html" style="color: #ffd700;">войдите</a> в аккаунт';
       }
@@ -64,39 +69,52 @@
     };
     
     async function loadGroups() {
-      const groups = await db.getAll('groups');
-      const tbody = document.getElementById('groupsList');
-      tbody.innerHTML = '';
-      
-      for (const group of groups) {
-        const isMember = currentUser && userGroups.some(g => g.id === group.id);
+      try {
+        const groups = await db.getAll('groups');
+        console.log('Загружены группы:', groups);
         
-        const row = tbody.insertRow();
-        row.insertCell(0).textContent = group.name;
-        row.insertCell(1).textContent = group.members;
-        row.insertCell(2).textContent = group.messages;
-        row.insertCell(3).textContent = group.description;
+        const tbody = document.getElementById('groupsList');
         
-        const actionCell = row.insertCell(4);
-        
-        if (isMember) {
-          const chatBtn = document.createElement('button');
-          chatBtn.textContent = 'Перейти в чат';
-          chatBtn.style.background = '#28a745';
-          chatBtn.onclick = () => window.location.href = `group-chat.html?id=${group.id}`;
-          actionCell.appendChild(chatBtn);
-        } else if (currentUser) {
-          const joinBtn = document.createElement('button');
-          joinBtn.textContent = 'Вступить';
-          joinBtn.onclick = () => joinGroup(group.id);
-          actionCell.appendChild(joinBtn);
-        } else {
-          const loginBtn = document.createElement('button');
-          loginBtn.textContent = 'Войти';
-          loginBtn.style.background = '#6c757d';
-          loginBtn.onclick = () => window.location.href = 'login.html';
-          actionCell.appendChild(loginBtn);
+        if (!groups || groups.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Группы не найдены</td></tr>';
+          return;
         }
+        
+        tbody.innerHTML = '';
+        
+        for (const group of groups) {
+          const isMember = currentUser && userGroups.some(g => g.id === group.id);
+          
+          const row = tbody.insertRow();
+          row.insertCell(0).textContent = group.name;
+          row.insertCell(1).textContent = group.members;
+          row.insertCell(2).textContent = group.messages;
+          row.insertCell(3).textContent = group.description;
+          
+          const actionCell = row.insertCell(4);
+          
+          if (isMember) {
+            const chatBtn = document.createElement('button');
+            chatBtn.textContent = 'Перейти в чат';
+            chatBtn.style.background = '#28a745';
+            chatBtn.onclick = () => window.location.href = `group-chat.html?id=${group.id}`;
+            actionCell.appendChild(chatBtn);
+          } else if (currentUser) {
+            const joinBtn = document.createElement('button');
+            joinBtn.textContent = 'Вступить';
+            joinBtn.onclick = () => joinGroup(group.id);
+            actionCell.appendChild(joinBtn);
+          } else {
+            const loginBtn = document.createElement('button');
+            loginBtn.textContent = 'Войти';
+            loginBtn.style.background = '#6c757d';
+            loginBtn.onclick = () => window.location.href = 'login.html';
+            actionCell.appendChild(loginBtn);
+          }
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки групп:', error);
+        document.getElementById('groupsList').innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Ошибка загрузки групп</td></tr>';
       }
     }
     
