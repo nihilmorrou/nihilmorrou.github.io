@@ -7,7 +7,7 @@ class UustBookDB {
       this.isReady = false;
       this.init();
     }
-  
+ 
     async init() {
       await this.initIndexedDB();
       await this.initLocalStorage();
