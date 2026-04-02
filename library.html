@@ -17,23 +17,22 @@
       <a href="groups.html">Сообщества</a>
       <a href="library.html" class="active">Библиотека</a>
     </nav>
+    <div class="user-info" id="userInfo" style="display: none;">
+      <span id="userName"></span>
+      <button onclick="logout()" class="logout-btn">Выйти</button>
+    </div>
   </header>
 
   <main class="content">
     <h2 style="color: white;">Библиотека</h2>
-    <input type="text" placeholder="Поиск..." class="search-input">
+    <input type="text" id="searchInput" placeholder="Поиск..." class="search-input">
 
     <table class="library-table">
       <thead>
-        <tr><th>Название</th><th>Размер</th><th></th></tr>
+        <tr><th>Название</th><th>Размер</th><th>Скачивания</th><th></th></tr>
       </thead>
-      <tbody>
-        <tr><td>Политология. Учебник для студентов вузов (2013)</td><td>1605 кб</td><td><button>Скачать</button></td></tr>
-        <tr><td>Матяш, Жаров, Несмеянов. Философия. Учебник</td><td>8705 кб</td><td><button>Скачать</button></td></tr>
-        <tr><td>История России (2-е издание)</td><td>2195 кб</td><td><button>Скачать</button></td></tr>
-        <tr><td>Курс высшей математики (1991)</td><td>641 кб</td><td><button>Скачать</button></td></tr>
-        <tr><td>Логика. Учебник для юридических вузов (2001)</td><td>755 кб</td><td><button>Скачать</button></td></tr>
-        <tr><td>Психология. Учебник для педагогических направлений</td><td>966 кб</td><td><button>Скачать</button></td></tr>
+      <tbody id="materialsList">
+        <tr><td colspan="4" style="text-align: center;">Загрузка...</td></tr>
       </tbody>
     </table>
   </main>
@@ -41,5 +40,64 @@
   <footer>
     <p>© 2026 UustBook</p>
   </footer>
+
+  <script src="database.js"></script>
+  <script>
+    let currentUser = null;
+
+    window.onload = async function() {
+      currentUser = db.getCurrentUser();
+      
+      if (currentUser) {
+        document.getElementById('userInfo').style.display = 'flex';
+        document.getElementById('userName').textContent = currentUser.fullname;
+      }
+      
+      await loadMaterials();
+      
+      document.getElementById('searchInput').addEventListener('input', loadMaterials);
+    };
+    
+    async function loadMaterials() {
+      const query = document.getElementById('searchInput').value;
+      const materials = await db.searchMaterials(query);
+      const tbody = document.getElementById('materialsList');
+      
+      if (materials.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Материалы не найдены</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = '';
+      
+      for (const material of materials) {
+        const row = tbody.insertRow();
+        row.insertCell(0).textContent = material.title;
+        row.insertCell(1).textContent = material.size;
+        row.insertCell(2).textContent = material.downloads || 0;
+        
+        const downloadCell = row.insertCell(3);
+        const downloadBtn = document.createElement('button');
+        downloadBtn.textContent = 'Скачать';
+        downloadBtn.onclick = () => downloadMaterial(material);
+        downloadCell.appendChild(downloadBtn);
+      }
+    }
+    
+    async function downloadMaterial(material) {
+      try {
+        await db.downloadMaterial(material.id);
+        alert(`Скачивание "${material.title}" началось!`);
+        await loadMaterials();
+      } catch (error) {
+        alert('Ошибка при скачивании');
+      }
+    }
+    
+    async function logout() {
+      db.logout();
+      window.location.href = 'index.html';
+    }
+  </script>
 </body>
 </html>
