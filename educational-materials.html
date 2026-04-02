@@ -107,6 +107,49 @@
       color: #ffd700;
       font-weight: bold;
     }
+    
+    header {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .logo h1 {
+      color: #2a63ff;
+    }
+    
+    nav a {
+      color: #333;
+      transition: color 0.3s;
+    }
+    
+    nav a:hover, nav a.active {
+      color: #2a63ff;
+    }
+    
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    #userName {
+      color: #2a63ff;
+      font-weight: 500;
+    }
+    
+    .logout-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    
+    .logout-btn:hover {
+      background: #c82333;
+    }
   </style>
 </head>
 <body>
@@ -120,9 +163,9 @@
       <a href="groups.html">Сообщества</a>
       <a href="library.html">Библиотека</a>
     </nav>
-    <div class="auth">
-      <a href="login.html">Войти</a> | 
-      <a href="register.html">Регистрация</a>
+    <div class="user-info" id="userInfo" style="display: none;">
+      <span id="userName"></span>
+      <button onclick="logout()" class="logout-btn">Выйти</button>
     </div>
   </header>
 
@@ -160,9 +203,9 @@
           </tr>
         </thead>
         <tbody id="materialsBody">
-          <!-- Данные загружаются через JavaScript -->
+          <tr><td colspan="5" style="text-align: center;">Загрузка...</td></tr>
         </tbody>
-      </table>
+       </table>
     </div>
   </main>
 
@@ -173,71 +216,44 @@
   <script>
     // База данных материалов по факультетам
     const materialsData = [
-      // Отдел подготовки кадров высшей квалификации
       { title: "Методология научных исследований", faculty: "Отдел подготовки кадров высшей квалификации", size: "2500 кб", downloads: 0 },
       { title: "Педагогика высшей школы", faculty: "Отдел подготовки кадров высшей квалификации", size: "1800 кб", downloads: 0 },
-      
-      // Институт непрерывного образования
       { title: "Основы дистанционного обучения", faculty: "Институт непрерывного образования", size: "1200 кб", downloads: 0 },
       { title: "Современные образовательные технологии", faculty: "Институт непрерывного образования", size: "2100 кб", downloads: 0 },
-      
-      // Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»
       { title: "Инженерная графика", faculty: "Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»", size: "3400 кб", downloads: 0 },
       { title: "Материаловедение", faculty: "Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»", size: "2800 кб", downloads: 0 },
       { title: "Технология машиностроения", faculty: "Факультет подготовки инженерных кадров при ПАО «ОДК-УМПО»", size: "4200 кб", downloads: 0 },
-      
-      // Факультет авиационных двигателей, энергетики и транспорта
       { title: "Авиационные двигатели", faculty: "Факультет авиационных двигателей, энергетики и транспорта", size: "5600 кб", downloads: 0 },
       { title: "Термодинамика", faculty: "Факультет авиационных двигателей, энергетики и транспорта", size: "3100 кб", downloads: 0 },
       { title: "Энергосбережение", faculty: "Факультет авиационных двигателей, энергетики и транспорта", size: "1950 кб", downloads: 0 },
-      
-      // Институт информатики, математики и робототехники
       { title: "Программирование на Python", faculty: "Институт информатики, математики и робототехники", size: "3200 кб", downloads: 0 },
       { title: "Базы данных", faculty: "Институт информатики, математики и робототехники", size: "2700 кб", downloads: 0 },
       { title: "Робототехника", faculty: "Институт информатики, математики и робототехники", size: "4100 кб", downloads: 0 },
       { title: "Высшая математика", faculty: "Институт информатики, математики и робототехники", size: "3800 кб", downloads: 0 },
-      
-      // Институт электротехнического инжиниринга
       { title: "Электротехника", faculty: "Институт электротехнического инжиниринга", size: "2900 кб", downloads: 0 },
       { title: "Схемотехника", faculty: "Институт электротехнического инжиниринга", size: "2300 кб", downloads: 0 },
       { title: "Микропроцессорные системы", faculty: "Институт электротехнического инжиниринга", size: "3500 кб", downloads: 0 },
-      
-      // Институт технологий и материалов
       { title: "Материаловедение", faculty: "Институт технологий и материалов", size: "3100 кб", downloads: 0 },
       { title: "Нанотехнологии", faculty: "Институт технологий и материалов", size: "2700 кб", downloads: 0 },
       { title: "Полимерные материалы", faculty: "Институт технологий и материалов", size: "2200 кб", downloads: 0 },
-      
-      // Отделение СПО «Авиационный технический колледж» филиала в г. Кумертау
       { title: "Основы авиастроения", faculty: "Отделение среднего профессионального образования «Авиационный технический колледж» филиала в г. Кумертау", size: "1900 кб", downloads: 0 },
       { title: "Техническая механика", faculty: "Отделение среднего профессионального образования «Авиационный технический колледж» филиала в г. Кумертау", size: "2400 кб", downloads: 0 },
-      
-      // Институт права
       { title: "Гражданское право", faculty: "Институт права", size: "2600 кб", downloads: 0 },
       { title: "Уголовное право", faculty: "Институт права", size: "2900 кб", downloads: 0 },
       { title: "Конституционное право", faculty: "Институт права", size: "2100 кб", downloads: 0 },
-      
-      // Институт истории и государственного управления
       { title: "История России", faculty: "Институт истории и государственного управления", size: "3400 кб", downloads: 0 },
       { title: "Государственное управление", faculty: "Институт истории и государственного управления", size: "2800 кб", downloads: 0 },
       { title: "Политология", faculty: "Институт истории и государственного управления", size: "2300 кб", downloads: 0 },
-      
-      // Физико-технический институт
       { title: "Физика", faculty: "Физико-технический институт", size: "4200 кб", downloads: 0 },
       { title: "Математический анализ", faculty: "Физико-технический институт", size: "3600 кб", downloads: 0 },
       { title: "Квантовая механика", faculty: "Физико-технический институт", size: "3900 кб", downloads: 0 },
-      
-      // Институт экономики, управления и бизнеса
       { title: "Экономическая теория", faculty: "Институт экономики, управления и бизнеса", size: "2500 кб", downloads: 0 },
       { title: "Менеджмент", faculty: "Институт экономики, управления и бизнеса", size: "2200 кб", downloads: 0 },
       { title: "Маркетинг", faculty: "Институт экономики, управления и бизнеса", size: "2000 кб", downloads: 0 },
       { title: "Бухгалтерский учет", faculty: "Институт экономики, управления и бизнеса", size: "2700 кб", downloads: 0 },
-      
-      // Институт природы и человека
       { title: "Биология", faculty: "Институт природы и человека", size: "3100 кб", downloads: 0 },
       { title: "Экология", faculty: "Институт природы и человека", size: "2400 кб", downloads: 0 },
       { title: "География", faculty: "Институт природы и человека", size: "2800 кб", downloads: 0 },
-      
-      // Высшая школа зарубежной филологии, лингвистики и перевода
       { title: "Английский язык", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "1900 кб", downloads: 0 },
       { title: "Теория перевода", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "2100 кб", downloads: 0 },
       { title: "Лингвистика", faculty: "Высшая школа зарубежной филологии, лингвистики и перевода", size: "2300 кб", downloads: 0 },
@@ -261,6 +277,27 @@
     function saveDownloads() {
       const downloads = materialsData.map(m => m.downloads);
       localStorage.setItem('materialDownloads', JSON.stringify(downloads));
+    }
+    
+    // Функция скачивания - всегда скачивает 3.txt
+    function downloadMaterial(index) {
+      // Увеличиваем счетчик скачиваний
+      materialsData[index].downloads++;
+      saveDownloads();
+      
+      // Скачиваем файл 3.txt
+      const link = document.createElement('a');
+      link.href = '3.txt';
+      link.download = '3.txt';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Обновляем отображение
+      const faculty = document.getElementById('facultySelect').value;
+      displayMaterials(faculty);
+      
+      console.log(`Скачивание файла 3.txt для материала "${materialsData[index].title}"`);
     }
     
     // Отображение материалов
@@ -295,24 +332,13 @@
         
         const actionCell = row.insertCell(4);
         const downloadBtn = document.createElement('button');
-        downloadBtn.textContent = 'Скачать';
+        downloadBtn.textContent = '📥 Скачать';
         downloadBtn.className = 'download-btn';
         downloadBtn.onclick = (function(idx) {
           return function() { downloadMaterial(idx); };
         })(originalIndex);
         actionCell.appendChild(downloadBtn);
       }
-    }
-    
-    // Функция скачивания
-    function downloadMaterial(index) {
-      materialsData[index].downloads++;
-      saveDownloads();
-      
-      const faculty = document.getElementById('facultySelect').value;
-      displayMaterials(faculty);
-      
-      alert(`Скачивание материала "${materialsData[index].title}" началось!\nВсего скачиваний: ${materialsData[index].downloads}`);
     }
     
     // Обработчик выбора факультета
@@ -323,6 +349,28 @@
     // Инициализация
     loadDownloads();
     displayMaterials('');
+    
+    // Авторизация
+    let currentUser = null;
+    
+    window.onload = async function() {
+      if (db && typeof db.waitForReady === 'function') {
+        await db.waitForReady();
+      }
+      
+      currentUser = db.getCurrentUser();
+      
+      if (currentUser) {
+        document.getElementById('userInfo').style.display = 'flex';
+        document.getElementById('userName').textContent = currentUser.fullname;
+      }
+    };
+    
+    async function logout() {
+      db.logout();
+      window.location.href = 'index.html';
+    }
   </script>
+  <script src="database.js"></script>
 </body>
 </html>
