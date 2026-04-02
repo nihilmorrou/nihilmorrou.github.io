@@ -46,8 +46,10 @@
     let currentUser = null;
 
     window.onload = async function() {
-      // Ждем готовности базы данных
-      await db.waitForReady();
+      if (db && typeof db.waitForReady === 'function') {
+        await db.waitForReady();
+      }
+      
       console.log('База данных готова, загружаем библиотеку...');
       
       currentUser = db.getCurrentUser();
@@ -66,7 +68,6 @@
       try {
         const query = document.getElementById('searchInput').value;
         const materials = await db.searchMaterials(query);
-        console.log('Загружены материалы:', materials);
         
         const tbody = document.getElementById('materialsList');
         
@@ -85,7 +86,9 @@
           
           const downloadCell = row.insertCell(3);
           const downloadBtn = document.createElement('button');
-          downloadBtn.textContent = 'Скачать';
+          downloadBtn.textContent = '📥 Скачать';
+          
+          // Привязываем конкретные файлы к конкретным материалам
           downloadBtn.onclick = () => downloadMaterial(material);
           downloadCell.appendChild(downloadBtn);
         }
@@ -97,12 +100,37 @@
     
     async function downloadMaterial(material) {
       try {
+        // Определяем какой файл скачивать в зависимости от ID материала
+        let fileToDownload = '';
+        
+        if (material.id === 1) {
+          fileToDownload = '1.txt';
+        } else if (material.id === 2) {
+          fileToDownload = '2.txt';
+        } else {
+          // Для остальных материалов (если есть) - тоже 1.txt по умолчанию
+          fileToDownload = '1.txt';
+        }
+        
+        // Увеличиваем счетчик скачиваний
         await db.downloadMaterial(material.id);
-        alert(`Скачивание "${material.title}" началось!`);
+        
+        // Создаем ссылку для скачивания
+        const link = document.createElement('a');
+        link.href = fileToDownload;
+        link.download = fileToDownload;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log(`Скачивание файла ${fileToDownload} для материала ${material.title}`);
+        
+        // Обновляем счетчик на странице
         await loadMaterials();
+        
       } catch (error) {
         console.error('Ошибка скачивания:', error);
-        alert('Ошибка при скачивании');
+        alert('Ошибка при скачивании файла');
       }
     }
     
