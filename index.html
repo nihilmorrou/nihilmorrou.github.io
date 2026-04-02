@@ -121,6 +121,32 @@
       color: #2a63ff;
     }
     
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .user-info span {
+      color: #2a63ff;
+      font-weight: 500;
+    }
+    
+    .logout-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    .logout-btn:hover {
+      background: #c82333;
+    }
+    
     footer {
       background: #1a1a2e;
       color: #aaa;
@@ -137,13 +163,17 @@
       <h1>UustBook</h1>
     </div>
     <nav>
-      <a href="index.html">Главная</a>
+      <a href="index.html" class="active">Главная</a>
       <a href="groups.html">Сообщества</a>
       <a href="library.html">Библиотека</a>
     </nav>
-    <div class="auth">
+    <div class="auth" id="authBlock">
       <a href="login.html">Войти</a> | 
       <a href="register.html">Регистрация</a>
+    </div>
+    <div class="user-info" id="userInfo" style="display: none;">
+      <span id="userName"></span>
+      <button onclick="logout()" class="logout-btn">Выйти</button>
     </div>
   </header>
 
@@ -167,5 +197,22 @@
   <footer>
     <p>© 2026 UustBook | Форум для обмена и обсуждения учебных вопросов.</p>
   </footer>
+
+  <script src="database.js"></script>
+  <script>
+    window.onload = function() {
+      const user = db.getCurrentUser();
+      if (user && user.id) {
+        document.getElementById('authBlock').style.display = 'none';
+        document.getElementById('userInfo').style.display = 'flex';
+        document.getElementById('userName').textContent = user.fullname;
+      }
+    };
+    
+    async function logout() {
+      db.logout();
+      window.location.href = 'index.html';
+    }
+  </script>
 </body>
 </html>
