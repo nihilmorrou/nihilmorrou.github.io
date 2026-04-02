@@ -4,6 +4,7 @@ class UustBookDB {
       this.dbName = 'UustBookDB';
       this.dbVersion = 1;
       this.db = null;
+      this.isReady = false;
       this.init();
     }
   
@@ -11,6 +12,14 @@ class UustBookDB {
       await this.initIndexedDB();
       await this.initLocalStorage();
       await this.loadInitialData();
+      this.isReady = true;
+      console.log('База данных готова');
+    }
+  
+    async waitForReady() {
+      while (!this.isReady) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
     }
   
     async initIndexedDB() {
@@ -67,16 +76,13 @@ class UustBookDB {
     }
   
     async loadInitialData() {
-      // Проверяем, загружали ли уже данные
       const dataLoaded = localStorage.getItem('dataLoaded') === 'true';
       if (dataLoaded) return;
   
       try {
-        // Загружаем данные из JSON файла
         const response = await fetch('data.json');
         const initialData = await response.json();
   
-        // Загружаем группы
         const groups = await this.getAll('groups');
         if (groups.length === 0 && initialData.groups) {
           for (const group of initialData.groups) {
@@ -89,7 +95,6 @@ class UustBookDB {
           }
         }
   
-        // Загружаем материалы
         const materials = await this.getAll('materials');
         if (materials.length === 0 && initialData.materials) {
           for (const material of initialData.materials) {
@@ -101,7 +106,6 @@ class UustBookDB {
           }
         }
   
-        // Создаем тестового пользователя
         const users = await this.getAll('users');
         if (users.length === 0) {
           await this.add('users', {
@@ -110,12 +114,13 @@ class UustBookDB {
             password: '123456',
             createdAt: new Date().toISOString()
           });
+          console.log('Создан тестовый пользователь');
         }
   
         localStorage.setItem('dataLoaded', 'true');
+        console.log('Начальные данные загружены');
       } catch (error) {
         console.error('Ошибка загрузки начальных данных:', error);
-        // Если файл data.json не найден, используем данные по умолчанию
         await this.loadDefaultData();
       }
     }
@@ -151,8 +156,6 @@ class UustBookDB {
         }
       }
     }
-  
-    // ... (остальные методы остаются теми же)
     
     async getAll(storeName) {
       return new Promise((resolve, reject) => {
