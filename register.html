@@ -42,6 +42,7 @@
         <button type="submit" class="btn">Зарегистрироваться</button>
       </form>
       <p>Уже есть аккаунт? <a href="login.html">Войти</a></p>
+      <div id="debugInfo" style="margin-top: 10px; font-size: 12px; color: #999;"></div>
     </div>
   </main>
 
@@ -58,22 +59,35 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
       const confirmPassword = document.getElementById('confirm-password').value;
+      const debugDiv = document.getElementById('debugInfo');
       
       if (password !== confirmPassword) {
+        debugDiv.textContent = 'Пароли не совпадают';
         alert('Пароли не совпадают');
         return;
       }
       
       if (password.length < 4) {
+        debugDiv.textContent = 'Пароль должен быть не менее 4 символов';
         alert('Пароль должен быть не менее 4 символов');
         return;
       }
       
+      debugDiv.textContent = 'Проверка...';
+      
       try {
+        // Ждем готовности базы данных
+        await db.waitForReady();
+        
+        debugDiv.textContent = 'База данных готова, регистрируем...';
+        
         await db.registerUser({ fullname, email, password });
+        debugDiv.textContent = 'Регистрация успешна!';
+        
         alert('Регистрация успешна! Теперь войдите в аккаунт.');
         window.location.href = 'login.html';
       } catch (error) {
+        debugDiv.textContent = 'Ошибка: ' + error.message;
         alert('Ошибка: ' + error.message);
       }
     });
