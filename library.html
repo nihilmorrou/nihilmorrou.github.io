@@ -5,6 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UustBook — Библиотека</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .add-material-btn {
+      background: #28a745;
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    
+    .add-material-btn:hover {
+      background: #218838;
+    }
+    
+    /* Модальное окно */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    
+    .modal-content h3 {
+      margin-top: 0;
+      color: #2a63ff;
+    }
+    
+    .modal-content input {
+      width: 100%;
+      padding: 10px;
+      margin: 15px 0;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    
+    .modal-content input:focus {
+      outline: none;
+      border-color: #2a63ff;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    
+    .modal-buttons button {
+      padding: 8px 20px;
+      cursor: pointer;
+    }
+    
+    .cancel-btn {
+      background: #6c757d;
+    }
+    
+    .cancel-btn:hover {
+      background: #5a6268;
+    }
+    
+    .file-info {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .delete-btn {
+      background: #dc3545;
+      margin-left: 10px;
+    }
+    
+    .delete-btn:hover {
+      background: #c82333;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -25,17 +122,43 @@
 
   <main class="content">
     <h2 style="color: white;">Библиотека</h2>
-    <input type="text" id="searchInput" placeholder="Поиск..." class="search-input">
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+      <input type="text" id="searchInput" placeholder="Поиск..." class="search-input" style="flex: 1;">
+      <button id="addMaterialBtn" class="add-material-btn">+ Добавить материал</button>
+    </div>
 
     <table class="library-table">
       <thead>
-        <tr><th>Название</th><th>Размер</th><th>Скачивания</th><th></th></tr>
+        <tr>
+          <th>Название</th>
+          <th>Размер</th>
+          <th>Скачивания</th>
+          <th></th>
+        </tr>
       </thead>
       <tbody id="materialsList">
         <tr><td colspan="4" style="text-align: center;">Загрузка...</td></tr>
       </tbody>
     </table>
   </main>
+
+  <!-- Модальное окно для добавления материала -->
+  <div id="addModal" class="modal">
+    <div class="modal-content">
+      <h3>➕ Добавить новый материал</h3>
+      <p>Новый материал будет скачивать файл: <strong>4.txt</strong></p>
+      <div class="file-info">
+        📄 Информация о файле 4.txt:<br>
+        <span id="fileInfoText">Загрузка информации...</span>
+      </div>
+      <input type="text" id="materialTitle" placeholder="Введите название материала" autocomplete="off">
+      <div class="modal-buttons">
+        <button onclick="closeModal()" class="cancel-btn">Отмена</button>
+        <button onclick="addMaterial()" class="btn">Добавить</button>
+      </div>
+    </div>
+  </div>
 
   <footer>
     <p>© 2026 UustBook</p>
@@ -44,53 +167,159 @@
   <script src="database.js"></script>
   <script>
     let currentUser = null;
-
-    window.onload = async function() {
-      if (db && typeof db.waitForReady === 'function') {
-        await db.waitForReady();
-      }
-      
-      console.log('База данных готова, загружаем библиотеку...');
-      
-      currentUser = db.getCurrentUser();
-      
-      if (currentUser) {
-        document.getElementById('userInfo').style.display = 'flex';
-        document.getElementById('userName').textContent = currentUser.fullname;
-      }
-      
-      await loadMaterials();
-      
-      document.getElementById('searchInput').addEventListener('input', loadMaterials);
-    };
+    let customMaterials = []; // Массив для пользовательских материалов
     
+    // Загружаем пользовательские материалы из localStorage
+    function loadCustomMaterials() {
+      const saved = localStorage.getItem('customLibraryMaterials');
+      if (saved) {
+        customMaterials = JSON.parse(saved);
+      }
+    }
+    
+    // Сохраняем пользовательские материалы
+    function saveCustomMaterials() {
+      localStorage.setItem('customLibraryMaterials', JSON.stringify(customMaterials));
+    }
+    
+    // Получение информации о файле 4.txt
+    async function getFileInfo() {
+      try {
+        const response = await fetch('4.txt', { method: 'HEAD' });
+        if (response.ok) {
+          const size = response.headers.get('Content-Length');
+          if (size) {
+            const sizeKB = (parseInt(size) / 1024).toFixed(0);
+            return `${sizeKB} кб`;
+          }
+        }
+        return 'Неизвестный размер';
+      } catch (error) {
+        console.error('Ошибка получения информации о файле:', error);
+        return 'Файл 4.txt доступен';
+      }
+    }
+    
+    // Показать модальное окно
+    async function showAddModal() {
+      if (!currentUser) {
+        alert('Войдите в аккаунт, чтобы добавлять материалы');
+        window.location.href = 'login.html';
+        return;
+      }
+      
+      const modal = document.getElementById('addModal');
+      const fileInfoSpan = document.getElementById('fileInfoText');
+      
+      // Загружаем информацию о файле
+      const fileInfo = await getFileInfo();
+      fileInfoSpan.textContent = fileInfo;
+      
+      document.getElementById('materialTitle').value = '';
+      modal.style.display = 'flex';
+    }
+    
+    // Закрыть модальное окно
+    function closeModal() {
+      const modal = document.getElementById('addModal');
+      modal.style.display = 'none';
+    }
+    
+    // Добавить новый материал
+    async function addMaterial() {
+      const title = document.getElementById('materialTitle').value.trim();
+      
+      if (!title) {
+        alert('Введите название материала');
+        return;
+      }
+      
+      // Получаем информацию о файле 4.txt
+      const fileSize = await getFileInfo();
+      
+      // Создаем новый материал
+      const newMaterial = {
+        id: Date.now(), // уникальный ID на основе времени
+        title: title,
+        size: fileSize,
+        downloads: 0,
+        fileName: '4.txt', // всегда скачивает 4.txt
+        isCustom: true // метка, что это пользовательский материал
+      };
+      
+      // Добавляем в массив пользовательских материалов
+      customMaterials.unshift(newMaterial); // добавляем в начало списка
+      saveCustomMaterials();
+      
+      // Обновляем отображение
+      await loadMaterials();
+      closeModal();
+      
+      alert(`Материал "${title}" успешно добавлен!`);
+    }
+    
+    // Удалить материал (только для пользовательских)
+    async function deleteMaterial(materialId) {
+      if (confirm('Вы уверены, что хотите удалить этот материал?')) {
+        customMaterials = customMaterials.filter(m => m.id !== materialId);
+        saveCustomMaterials();
+        await loadMaterials();
+        alert('Материал удален');
+      }
+    }
+    
+    // Загрузка всех материалов (стандартные + пользовательские)
     async function loadMaterials() {
       try {
-        const query = document.getElementById('searchInput').value;
-        const materials = await db.searchMaterials(query);
+        // Получаем стандартные материалы из базы данных
+        let standardMaterials = await db.getAll('materials');
+        
+        // Объединяем с пользовательскими материалами
+        let allMaterials = [...customMaterials, ...standardMaterials];
+        
+        // Применяем поиск
+        const query = document.getElementById('searchInput').value.toLowerCase();
+        if (query) {
+          allMaterials = allMaterials.filter(m => 
+            m.title.toLowerCase().includes(query)
+          );
+        }
         
         const tbody = document.getElementById('materialsList');
         
-        if (!materials || materials.length === 0) {
+        if (!allMaterials || allMaterials.length === 0) {
           tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Материалы не найдены</td></tr>';
           return;
         }
         
         tbody.innerHTML = '';
         
-        for (const material of materials) {
+        for (const material of allMaterials) {
           const row = tbody.insertRow();
           row.insertCell(0).textContent = material.title;
           row.insertCell(1).textContent = material.size;
           row.insertCell(2).textContent = material.downloads || 0;
           
-          const downloadCell = row.insertCell(3);
+          const actionCell = row.insertCell(3);
+          const actionDiv = document.createElement('div');
+          actionDiv.className = 'action-buttons';
+          
+          // Кнопка скачивания
           const downloadBtn = document.createElement('button');
           downloadBtn.textContent = '📥 Скачать';
-          
-          // Привязываем конкретные файлы к конкретным материалам
           downloadBtn.onclick = () => downloadMaterial(material);
-          downloadCell.appendChild(downloadBtn);
+          actionDiv.appendChild(downloadBtn);
+          
+          // Кнопка удаления (только для пользовательских материалов)
+          if (material.isCustom) {
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '🗑 Удалить';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.onclick = () => deleteMaterial(material.id);
+            actionDiv.appendChild(deleteBtn);
+          }
+          
+          actionCell.appendChild(actionDiv);
         }
       } catch (error) {
         console.error('Ошибка загрузки материалов:', error);
@@ -98,22 +327,38 @@
       }
     }
     
+    // Функция скачивания
     async function downloadMaterial(material) {
       try {
-        // Определяем какой файл скачивать в зависимости от ID материала
+        // Определяем какой файл скачивать
         let fileToDownload = '';
         
-        if (material.id === 1) {
-          fileToDownload = '1.txt';
-        } else if (material.id === 2) {
-          fileToDownload = '2.txt';
+        // Для пользовательских материалов всегда 4.txt
+        if (material.isCustom) {
+          fileToDownload = '4.txt';
         } else {
-          // Для остальных материалов (если есть) - тоже 1.txt по умолчанию
-          fileToDownload = '1.txt';
+          // Для стандартных материалов из data.json
+          if (material.id === 1) {
+            fileToDownload = '1.txt';
+          } else if (material.id === 2) {
+            fileToDownload = '2.txt';
+          } else {
+            fileToDownload = '1.txt';
+          }
         }
         
         // Увеличиваем счетчик скачиваний
-        await db.downloadMaterial(material.id);
+        if (material.isCustom) {
+          // Для пользовательских материалов обновляем счетчик в customMaterials
+          const index = customMaterials.findIndex(m => m.id === material.id);
+          if (index !== -1) {
+            customMaterials[index].downloads++;
+            saveCustomMaterials();
+          }
+        } else {
+          // Для стандартных материалов используем БД
+          await db.downloadMaterial(material.id);
+        }
         
         // Создаем ссылку для скачивания
         const link = document.createElement('a');
@@ -134,6 +379,42 @@
       }
     }
     
+    // Инициализация страницы
+    window.onload = async function() {
+      // Ждем готовности базы данных
+      if (db && typeof db.waitForReady === 'function') {
+        await db.waitForReady();
+      }
+      
+      console.log('База данных готова, загружаем библиотеку...');
+      
+      currentUser = db.getCurrentUser();
+      
+      if (currentUser) {
+        document.getElementById('userInfo').style.display = 'flex';
+        document.getElementById('userName').textContent = currentUser.fullname;
+      }
+      
+      // Загружаем пользовательские материалы
+      loadCustomMaterials();
+      
+      // Загружаем все материалы
+      await loadMaterials();
+      
+      // Обработчики событий
+      document.getElementById('searchInput').addEventListener('input', loadMaterials);
+      document.getElementById('addMaterialBtn').addEventListener('click', showAddModal);
+      
+      // Закрытие модального окна при клике вне его
+      window.onclick = function(event) {
+        const modal = document.getElementById('addModal');
+        if (event.target === modal) {
+          closeModal();
+        }
+      };
+    };
+    
+    // Функция выхода
     async function logout() {
       db.logout();
       window.location.href = 'index.html';
